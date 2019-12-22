@@ -1,5 +1,9 @@
 package com.pyb.app.account_management.db;
 
-public class AccountEntity {
+import java.io.Serializable;
+
+public class AccountEntity implements Serializable {
+	
+	
 
 }
