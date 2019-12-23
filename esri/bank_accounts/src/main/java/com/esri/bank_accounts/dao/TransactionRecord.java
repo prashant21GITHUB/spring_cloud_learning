@@ -7,6 +7,7 @@ import java.io.Serializable;
 @Table(name = "TRANSACTION_DETAILS")
 @NamedQuery(name="TransactionRecord.findAll", query="SELECT record FROM TransactionRecord record")
 @NamedQuery(name="TransactionRecord.findById", query="SELECT record FROM TransactionRecord record WHERE record.transactionId = :transactionId")
+@NamedQuery(name="TransactionRecord.findByTransactionDate", query="SELECT record FROM TransactionRecord record WHERE record.transactionDate = :transactionDate")
 public class TransactionRecord implements Serializable {
 
     @Id

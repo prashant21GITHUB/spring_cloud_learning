@@ -51,6 +51,14 @@ public class TransactionRepository {
         return Optional.empty();
     }
 
+    public List<TransactionRecord> findByDate(String transactionDate) {
+        TypedQuery<TransactionRecord> namedQuery = entityManager
+                .createNamedQuery("TransactionRecord.findByTransactionDate", TransactionRecord.class);
+        namedQuery.setParameter("transactionDate", transactionDate);
+        List<TransactionRecord> resultList = namedQuery.getResultList();
+        return resultList;
+    }
+
 
     public List<TransactionRecord> findAll() {
         List<TransactionRecord> resultList = entityManager

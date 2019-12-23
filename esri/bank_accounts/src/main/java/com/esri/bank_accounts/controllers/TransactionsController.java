@@ -2,6 +2,7 @@ package com.esri.bank_accounts.controllers;
 
 import com.esri.bank_accounts.dao.TransactionRecord;
 import com.esri.bank_accounts.dao.TransactionRepository;
+import com.esri.bank_accounts.utils.CsvFileReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,6 +18,13 @@ public class TransactionsController {
 
     @Autowired
     private TransactionRepository repository;
+
+    @PostMapping("/initDB")
+    public String init() {
+        List<TransactionRecord> transactionRecords = CsvFileReader.readTransactionRecords("Bank_transactions48435d6.csv");
+        repository.saveAll(transactionRecords);
+        return "Success";
+    }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
@@ -72,6 +80,20 @@ public class TransactionsController {
     public ResponseEntity<ServiceResponse<List<TransactionRecord>>> getAllTransactions() {
         try {
             List<TransactionRecord> transactionRecords = repository.findAll();
+            return new ResponseEntity<>(new ServiceResponse<>(transactionRecords, ""),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(new ServiceResponse<>(Collections.EMPTY_LIST, ex.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(value = "/date/{transactionDate}",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ServiceResponse<List<TransactionRecord>>> getAllTransactionsByDate(@PathVariable String transactionDate) {
+        try {
+            transactionDate = transactionDate.replace("_", " ");
+            if(transactionDate.startsWith("0")) transactionDate = transactionDate.substring(1);
+            List<TransactionRecord> transactionRecords = repository.findByDate(transactionDate);
             return new ResponseEntity<>(new ServiceResponse<>(transactionRecords, ""),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception ex) {
