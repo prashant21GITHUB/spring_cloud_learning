@@ -1,33 +1,34 @@
 package com.esri.bank_accounts.dao;
 
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 
 @Service
-public class TransactionRepository implements CrudRepository<TransactionRecord, Long> {
+public class TransactionRepository {
 
 
 
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Override
+    @Transactional
     public TransactionRecord save(TransactionRecord entity) {
         try {
             entityManager.persist(entity);
+            return entity;
         } catch (Exception ex) {
-
+            throw new RuntimeException("Failed to create new transaction record. Error: " + ex.getMessage());
         }
-        return entity;
     }
 
 
-    @Override
     @Transactional
     public <S extends TransactionRecord> Iterable<S> saveAll(Iterable<S> entities) {
         try {
@@ -41,48 +42,86 @@ public class TransactionRepository implements CrudRepository<TransactionRecord, 
 
     }
 
-    @Override
-    public Optional<TransactionRecord> findById(Long aLong) {
-        return null;
+    public Optional<TransactionRecord> findById(Long transactionId) {
+        TypedQuery<TransactionRecord> namedQuery = entityManager
+                .createNamedQuery("TransactionRecord.findById", TransactionRecord.class);
+        namedQuery.setParameter("record.transactionId", transactionId);
+        TransactionRecord obj = namedQuery.getSingleResult();
+        if(obj != null) return Optional.of(obj);
+        return Optional.empty();
     }
 
-    @Override
-    public boolean existsById(Long aLong) {
-        return false;
+
+    public List<TransactionRecord> findAll() {
+        List<TransactionRecord> resultList = entityManager
+                .createNamedQuery("TransactionRecord.findAll", TransactionRecord.class).getResultList();
+        return resultList;
     }
 
-    @Override
-    public Iterable<TransactionRecord> findAll() {
-        return null;
+    public List<TransactionRecord> findAllByPages(int pageNumber, int pageSize) {
+        Query query = entityManager.createNamedQuery("TransactionRecord.findAll", TransactionRecord.class);
+        query.setFirstResult((pageNumber-1) * pageSize);
+        query.setMaxResults(pageSize);
+        List <TransactionRecord> resultList = query.getResultList();
+        return resultList;
     }
 
-    @Override
     public Iterable<TransactionRecord> findAllById(Iterable<Long> longs) {
         return null;
     }
 
-    @Override
     public long count() {
         return 0;
     }
 
-    @Override
-    public void deleteById(Long aLong) {
-
+    @Transactional
+    public void deleteById(Long transactionId) {
+        TransactionRecord entity = new TransactionRecord();
+        entity.setTransactionId(transactionId);
+        try {
+            entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to delete transaction record with ID: "+ entity.getTransactionId()+
+                    ",  Error: " + ex.getMessage());
+        }
     }
 
-    @Override
+    @Transactional
     public void delete(TransactionRecord entity) {
-
+        try {
+            entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to delete transaction record with ID: "+ entity.getTransactionId()+
+                    ",  Error: " + ex.getMessage());
+        }
     }
 
-    @Override
-    public void deleteAll(Iterable<? extends TransactionRecord> entities) {
-
+    @Transactional
+    public void update(Long transactionId, TransactionRecord transactionRecord) {
+        TypedQuery<TransactionRecord> namedQuery = entityManager
+                .createNamedQuery("TransactionRecord.findById", TransactionRecord.class);
+        namedQuery.setParameter("transactionId", transactionId);
+        TransactionRecord savedObject = namedQuery.getSingleResult();
+        if(savedObject == null) {
+            throw new RuntimeException("Record does not exists with transaction Id: "+ transactionId);
+        }
+        mapFields(transactionRecord, savedObject);
+        try {
+            entityManager.persist(savedObject);
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to update transaction record with ID: "+ transactionId +
+                    ",  Error: " + ex.getMessage());
+        }
     }
 
-    @Override
-    public void deleteAll() {
-
+    private void mapFields(TransactionRecord source, TransactionRecord target) {
+        if(source.getTransactionId() != null) target.setTransactionId(source.getTransactionId());
+        if(source.getAccountNumber() != null) target.setAccountNumber(source.getAccountNumber());
+        if(source.getAmount() != null) target.setAmount(source.getAmount());
+        if(source.getBalanceAmount() != null) target.setBalanceAmount(source.getBalanceAmount());
+        if(source.getDetails() != null) target.setDetails(source.getDetails());
+        if(source.getTransactionType() != null) target.setTransactionType(source.getTransactionType());
+        if(source.getValueDate() != null) target.setValueDate(source.getValueDate());
+        if(source.getTransactionDate() != null) target.setTransactionDate(source.getTransactionDate());
     }
 }

@@ -5,6 +5,8 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "TRANSACTION_DETAILS")
+@NamedQuery(name="TransactionRecord.findAll", query="SELECT record FROM TransactionRecord record")
+@NamedQuery(name="TransactionRecord.findById", query="SELECT record FROM TransactionRecord record WHERE record.transactionId = :transactionId")
 public class TransactionRecord implements Serializable {
 
     @Id
@@ -12,20 +14,20 @@ public class TransactionRecord implements Serializable {
     @Column(name = "TRANSACTION_ID")
     private Long transactionId;
     @Column(name = "ACCOUNT_NO")
-    final private Long accountNumber;
+    private Long accountNumber;
     @Column(name = "DETAILS")
-    final private String details;
+    private String details;
     @Column(name = "TRANSACTION_DATE")
-    final private String transactionDate;
+    private String transactionDate;
     @Column(name = "VALUE_DATE")
-    final private String valueDate;
+    private String valueDate;
     @Column(name = "AMOUNT")
-    final private Double amount;
+    private Double amount;
     @Column(name = "BALANCE_AMOUNT")
-    final private Double balanceAmount;
+    private Double balanceAmount;
     @Enumerated(value = EnumType.STRING)
     @Column(name = "TRANSACTION_TYPE")
-    final private TransactionType transactionType;
+    private TransactionType transactionType;
 
     public TransactionRecord(Long accountNumber, String details, String transactionDate,
                              String valueDate, Double amount, Double balanceAmount, TransactionType transactionType) {
@@ -36,6 +38,9 @@ public class TransactionRecord implements Serializable {
         this.amount = amount;
         this.balanceAmount = balanceAmount;
         this.transactionType = transactionType;
+    }
+
+    public TransactionRecord() {
     }
 
     public Long getTransactionId() {
@@ -68,5 +73,37 @@ public class TransactionRecord implements Serializable {
 
     public TransactionType getTransactionType() {
         return transactionType;
+    }
+
+    public void setTransactionId(Long transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public void setAccountNumber(Long accountNumber) {
+        this.accountNumber = accountNumber;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
+    }
+
+    public void setTransactionDate(String transactionDate) {
+        this.transactionDate = transactionDate;
+    }
+
+    public void setValueDate(String valueDate) {
+        this.valueDate = valueDate;
+    }
+
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
+
+    public void setBalanceAmount(Double balanceAmount) {
+        this.balanceAmount = balanceAmount;
+    }
+
+    public void setTransactionType(TransactionType transactionType) {
+        this.transactionType = transactionType;
     }
 }
