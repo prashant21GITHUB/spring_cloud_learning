@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "transactions")
@@ -43,7 +44,7 @@ public class TransactionsController {
     public ResponseEntity<ServiceResponse> updateTransaction(@PathVariable Long transactionId, @RequestBody TransactionRecord transactionRecord) {
         try {
             repository.update(transactionId, transactionRecord);
-            return new ResponseEntity<>(new ServiceResponse(transactionRecord, ""), HttpStatus.CREATED);
+            return new ResponseEntity<>(new ServiceResponse(transactionRecord, ""), HttpStatus.ACCEPTED);
         } catch (Exception ex) {
             return new ResponseEntity<>(new ServiceResponse<>(transactionRecord, ex.getMessage()),
                     HttpStatus.INTERNAL_SERVER_ERROR);
@@ -69,7 +70,7 @@ public class TransactionsController {
             Integer pageSize = size;
             List<TransactionRecord> transactionRecords = repository.findAllByPages(pageNumber, pageSize);
             return new ResponseEntity<>(new ServiceResponse<>(transactionRecords, ""),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+                    HttpStatus.OK);
         } catch (Exception ex) {
             return new ResponseEntity<>(new ServiceResponse<>(Collections.EMPTY_LIST, ex.getMessage()),
                     HttpStatus.INTERNAL_SERVER_ERROR);
@@ -81,9 +82,25 @@ public class TransactionsController {
         try {
             List<TransactionRecord> transactionRecords = repository.findAll();
             return new ResponseEntity<>(new ServiceResponse<>(transactionRecords, ""),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+                    HttpStatus.OK);
         } catch (Exception ex) {
             return new ResponseEntity<>(new ServiceResponse<>(Collections.EMPTY_LIST, ex.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(value = "/{transactionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ServiceResponse<TransactionRecord>> getTransactionById(@PathVariable Long transactionId) {
+        try {
+            Optional<TransactionRecord> transactionRecords = repository.findById(transactionId);
+            if(transactionRecords.isPresent())
+                return new ResponseEntity<>(new ServiceResponse<>(transactionRecords.get(), ""),
+                    HttpStatus.OK);
+            else
+                return new ResponseEntity<>(new ServiceResponse<>(transactionRecords.get(), "Record not exists with ID "+ transactionId),
+                        HttpStatus.OK);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(new ServiceResponse<>(null, ex.getMessage()),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -95,7 +112,7 @@ public class TransactionsController {
             if(transactionDate.startsWith("0")) transactionDate = transactionDate.substring(1);
             List<TransactionRecord> transactionRecords = repository.findByDate(transactionDate);
             return new ResponseEntity<>(new ServiceResponse<>(transactionRecords, ""),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+                    HttpStatus.OK);
         } catch (Exception ex) {
             return new ResponseEntity<>(new ServiceResponse<>(Collections.EMPTY_LIST, ex.getMessage()),
                     HttpStatus.INTERNAL_SERVER_ERROR);

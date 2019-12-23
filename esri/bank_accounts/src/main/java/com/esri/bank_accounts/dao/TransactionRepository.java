@@ -45,7 +45,7 @@ public class TransactionRepository {
     public Optional<TransactionRecord> findById(Long transactionId) {
         TypedQuery<TransactionRecord> namedQuery = entityManager
                 .createNamedQuery("TransactionRecord.findById", TransactionRecord.class);
-        namedQuery.setParameter("record.transactionId", transactionId);
+        namedQuery.setParameter("transactionId", transactionId);
         TransactionRecord obj = namedQuery.getSingleResult();
         if(obj != null) return Optional.of(obj);
         return Optional.empty();
